@@ -1,5 +1,5 @@
 # 🩺 **Lung-AI-3D**
-### _“Evaluación comparativa de redes neuronales tridimensionales para la detección automática de cáncer pulmonar”_
+### “Evaluación comparativa de redes neuronales tridimensionales para la detección automática de cáncer pulmonar”
 
 <p align="center">
   <img src="https://img.shields.io/badge/python-3.11.9-blue?logo=python">
