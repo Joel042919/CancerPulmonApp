@@ -1,49 +1,47 @@
-# 🩺 **Lung-AI-3D**
-### “Evaluación comparativa de redes neuronales tridimensionales para la detección automática de cáncer pulmonar”
+# 🩺 **Lung‑AI‑3D**
+### _Evaluación comparativa de redes neuronales tridimensionales para la detección automática de cáncer pulmonar_
 
-<p align="center">
-  <img src="https://img.shields.io/badge/python-3.11.9-blue?logo=python">
-  <img src="https://img.shields.io/badge/streamlit-1.34%2B-red?logo=streamlit">
-  <img src="https://img.shields.io/badge/status-beta-yellow">
-</p>
+![Python 3.11.9](https://img.shields.io/badge/python-3.11.9-blue?logo=python)
+![Streamlit 1.34+](https://img.shields.io/badge/streamlit-1.34%2B-red?logo=streamlit)
+![Status beta](https://img.shields.io/badge/status-beta-yellow)
 
-> **TL;DR** Este repo contiene todo el pipeline — pre‑proceso, entrenamiento, evaluación y app web — para comparar **ResNet50 3D**, **DenseNet121 3D** y una **CNN 3D personalizada** en la clasificación de nódulos pulmonares (benignos vs malignos) a partir de tomografías computarizadas (TC).
+> **TL;DR**  
+> Este repositorio contiene **todo el pipeline** — pre‑procesamiento, entrenamiento, evaluación y _dashboard_ web — para comparar **ResNet50 3D**, **DenseNet121 3D** y una **CNN 3D personalizada** en la clasificación de nódulos pulmonares (benignos vs malignos) usando tomografías computarizadas.
 
 ---
 
 ## 🗺️ Índice
-1. Motivación  
-2. Estructura del proyecto  
-3. Datasets  
-4. Entorno de desarrollo  
-5. Instalación paso a paso  
-6. Uso rápido  
-7. Comandos avanzados  
-8. Resultados principales  
-9. Créditos y licencias  
+1. [Motivación](#motivación)  
+2. [Estructura del proyecto](#estructura-del-proyecto)  
+3. [Datasets](#datasets)  
+4. [Entorno de desarrollo](#entorno-de-desarrollo)  
+5. [Instalación paso a paso](#instalación-paso-a-paso)  
+6. [Uso rápido](#uso-rápido)  
+7. [Comandos avanzados](#comandos-avanzados)  
+8. [Resultados principales](#resultados-principales)  
+9. [Créditos y licencias](#créditos-y-licencias)
 
 ---
 
 ## Motivación
-- **Impacto clínico** El cáncer de pulmón es la primera causa de mortalidad oncológica mundial. Diagnosticar nódulos < 1 cm supone revisar ± 120 cortes DICOM por paciente: tedioso y propenso a error.
-- **IA 3D** Las CNN 3D analizan volúmenes completos, preservando contexto espacial. ¿Cuál arquitectura logra el mejor *trade‑off* sensibilidad / especificidad solo en CPU?
-- **Transparencia** El repo ofrece código reproducible, métricas, figuras y un dashboard Streamlit listo para demo.
+- **Impacto clínico**  El cáncer de pulmón es la primera causa de mortalidad oncológica mundial. Diagnosticar nódulos pequeños requiere que un radiólogo revise ∼120 cortes DICOM por paciente: tarea tediosa y propensa a error.  
+- **IA 3D**  Las CNN 3D analizan volúmenes completos, preservando el contexto espacial. ¿Qué arquitectura logra el mejor _trade‑off_ sensibilidad / especificidad usando solo CPU?  
+- **Transparencia**  Se ofrece código reproducible, métricas, figuras y un dashboard **Streamlit** listo para demo.
 
 ---
 
 ## Estructura del proyecto
 ```text
 LUNG_CANCER_DETECTION_APP/
-│
-├── newApp.py              # app Streamlit (Diagnóstico, Comparación, Reporte)
+├── newApp.py               # app Streamlit (Diagnóstico · Comparación · Reporte)
 ├── requirements.txt
-├── reports/               # métricas, PDFs y figuras
+├── reports/
 │   ├── model_comparison.csv
 │   └── figures/
-│       ├── cm_*           # matrices de confusión
-│       ├── roc_* / pr_*   # ROC & PR
+│       ├── cm_*            # matrices de confusión
+│       ├── roc_* , pr_*    # curvas ROC & PR
 │       └── mcnemar/
-├── models/                # pesos .pth (post‑training)
+├── models/                 # pesos .pth (se generan tras entrenamiento)
 ├── ml/
 │   ├── train.py
 │   ├── evaluate.py
@@ -51,44 +49,57 @@ LUNG_CANCER_DETECTION_APP/
 ├── preprocessing.py
 ├── model_utils_pt.py
 └── data/
-    ├── benign/            # 80 % train benign
+    ├── benign/             # 80 % train benign
     ├── malignant/
-    ├── benign_test/       # 20 % test benign
+    ├── benign_test/        # 20 % test benign
     ├── malignant_test/
-    └── examples/          # volúmenes demo
+    └── examples/           # volúmenes demo para la app
 ```
 
 ---
 
 ## Datasets
-| Fuente | Tipo | Link |
-|--------|------|------|
-| **LIDC‑IDRI** | 1 012 TC; 157 con dictamen radiólogo | <https://www.cancerimagingarchive.net/collection/lidc-idri/> |
-| **Etiquetas Kaggle** | benigno / maligno CSV | <https://www.kaggle.com/datasets/wissmeddeb/lidc-idri> |
+| Fuente | Descripción | Enlace |
+|--------|-------------|--------|
+| **LIDC‑IDRI** | 1 012 estudios TC (157 con veredicto radiólogo) | <https://www.cancerimagingarchive.net/collection/lidc-idri/> |
+| **Etiquetas benigno/maligno** | CSV de Kaggle con diagnóstico | <https://www.kaggle.com/datasets/wissmeddeb/lidc-idri> |
+
+> Solo necesitas **LIDC‑IDRI** + el CSV de etiquetas para reproducir los experimentos.
 
 ---
 
 ## Entorno de desarrollo
-|  |  |
-|--|--|
-| **IDE** | VS Code 1.90 |
-| **SO**  | Windows 11 Pro 64 (24H2) |
+| Recurso | Detalle |
+|---------|---------|
+| **IDE** | Visual Studio Code 1.90 |
+| **SO** | Windows 11 Pro x64 (24H2) |
 | **Python** | 3.11.9 |
-| **HW** | Intel i7‑1255U · 12 GB RAM · GPU integrada |
-| **Libs** | PyTorch 2.3, MONAI 1.3, Streamlit 1.34, pdfkit 1.0 |
+| **Hardware** | Intel i7‑1255U · 12 GB RAM · GPU integrada |
+| **Librerías** | PyTorch 2.3 · MONAI 1.3 · Streamlit 1.34 · pdfkit 1.0 |
 
 ---
 
 ## Instalación paso a paso
 ```bash
+# 1) Clonar
 git clone https://github.com/tuUsuario/LUNG_CANCER_DETECTION_APP.git
 cd LUNG_CANCER_DETECTION_APP
-python -m venv .venv && source .venv/Scripts/activate
+
+# 2) Crear entorno virtual (opcional)
+python -m venv .venv
+# Windows:
+.venv\Scripts\activate
+# Linux/Mac:
+# source .venv/bin/activate
+
+# 3) Instalar dependencias
 pip install -r requirements.txt
 
-# ↓ descarga LIDC‑IDRI y el CSV de etiquetas
-#   descomprime en data/ según estructura mostrada
-python separaDatos.py   # opcional: reparte train / test
+# 4) Descargar LIDC‑IDRI + CSV de etiquetas
+#    Descomprimir según la estructura /data mostrada arriba
+
+# 5) (Opcional) Separar train/test automáticamente
+python separaDatos.py
 ```
 
 ---
@@ -97,25 +108,33 @@ python separaDatos.py   # opcional: reparte train / test
 
 | Acción | Comando |
 |--------|---------|
-| Dashboard Streamlit | `streamlit run newApp.py` |
-| Entrenar modelos | `python ml/train.py` |
-| Evaluar modelos | `python ml/evaluate.py` |
-| Hyper‑tuning (demo) | `python ml/hyperparameter_tuning.py` |
+| **Dashboard Streamlit** | `streamlit run newApp.py` |
+| **Entrenar modelos** | `python ml/train.py` |
+| **Evaluar modelos** | `python ml/evaluate.py` |
+| **Hiper‑tuning** | `python ml/hyperparameter_tuning.py` |
+
+El **dashboard** permite:  
+1. Diagnosticar un volumen TC y ver mapa de calor.  
+2. Explorar métricas comparativas.  
+3. Generar un PDF interactivo con un solo clic.
 
 ---
 
 ## Resultados principales
-| Métrica | ResNet50 3D | DenseNet121 3D | CNN 3D custom |
-|---------|-------------|---------------|---------------|
+| Métrica | ResNet50 3D | DenseNet121 3D | CNN 3D custom |
+|---------|------------:|---------------:|--------------:|
 | Accuracy | **0.65** | 0.56 | 0.60 |
 | Sensitivity | 0.26 | **0.53** | 0.06 |
 | Specificity | **0.91** | 0.58 | 0.96 |
 | AUC‑ROC | 0.59 | **0.60** | 0.54 |
 
+**DenseNet121** es la más sensible; **ResNet50** la más específica.  
+_¡Ninguna alcanza los umbrales clínicos recomendados todavía!_
+
 ---
 
 ## Créditos y licencias
-- Datasets TCIA & Kaggle — CC‑BY.  
-- Código © 2025 — Equipo *Joelito AI* — MIT License.
+- **Datasets** © TCIA & Kaggle, licencias CC‑BY.  
+- **Código** © 2025 _Joelito AI Team_, licenciado bajo [MIT](LICENSE).
 
-¡Contribuciones y detección de *issues* son bienvenidos! 🩻✨
+> ¿Preguntas o sugerencias? Abre un **Issue** o crea un _Pull Request_. ¡Contribuye! :sparkles:
