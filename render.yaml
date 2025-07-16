@@ -1,0 +1,14 @@
+# render.yaml
+services:
+  - type: web
+    name: detectar_cancer_pulmon
+    env: python
+    plan: free
+    branch: main
+    buildCommand: |
+      pip install --upgrade pip
+      pip install -r requirements.txt
+      git lfs install --system
+      git lfs pull
+    startCommand: streamlit run app/main.py --server.port $PORT --server.address 0.0.0.0
+    autoDeploy: true
