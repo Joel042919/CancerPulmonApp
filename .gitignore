@@ -1,7 +1,10 @@
 data/
 .venv/
 .vscode/
-models/
+models/3d_*
+models/cnn_*
+models/mo*
+models/sa*
 reports/figures_2
 reports/figures_3
 reports/figures_old
