@@ -2,7 +2,7 @@ data/
 .venv/
 .vscode/
 models/3d_*
-models/cnn_*
+models/cnn_3d_personalizada_best.pth
 models/mo*
 models/sa*
 reports/figures_2
