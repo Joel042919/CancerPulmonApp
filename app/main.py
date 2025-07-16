@@ -19,7 +19,7 @@ import matplotlib.pyplot as plt
 import plotly.express as px
 import plotly.io as pio
 import pdfkit
-import tempfile, zipfile
+import shutil, pdfkit, logging
 from pathlib import Path
 from model_utils_pt import load_models, predict_volume
 from preprocessing import load_and_preprocess_ct_scan
@@ -482,12 +482,16 @@ FIG_DIR     = os.path.join(REPORT_DIR, "figures")
 MCNEMAR_DIR = os.path.join(FIG_DIR, "mcnemar")
 os.makedirs(REPORT_DIR, exist_ok=True)
 
-DEFAULT_WK = r"C:\\Program Files\\wkhtmltopdf\\bin\\wkhtmltopdf.exe"
-PDFKIT_CONFIG = pdfkit.configuration(wkhtmltopdf=DEFAULT_WK)
+WKHTML = shutil.which("wkhtmltopdf")
+if WKHTML:
+    PDFKIT_CONFIG = pdfkit.configuration(wkhtmltopdf=WKHTML)
+else:
+    PDFKIT_CONFIG = None
+    logging.warning("wkhtmltopdf no encontrado; PDF deshabilitado")
 PDFKIT_OPTS   = {"enable-local-file-access": None}
 
 # --------------- 3. Apariencia global ----------------------
-st.set_page_config(page_title="Med‑AI Hub", layout="wide", page_icon="🏥")
+st.set_page_config(page_title="Med-AI Hub", layout="wide", page_icon="🏥")
 pio.templates.default = "plotly_dark"   # gráficos oscuros
 
 def inject_css() -> None:

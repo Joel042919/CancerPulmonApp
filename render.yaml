@@ -1,14 +1,7 @@
-# render.yaml
 services:
   - type: web
-    name: detectar_cancer_pulmon
-    env: python
-    plan: free
-    branch: main
-    buildCommand: |
-      pip install --upgrade pip
-      pip install -r requirements.txt
-      git lfs install --system
-      git lfs pull
-    startCommand: streamlit run app/main.py --server.port $PORT --server.address 0.0.0.0
+    name: detectar-cancer-pulmon
+    plan: free-docker      # 0.5 vCPU · 512 MB · 24 h por despliegue
+    env: docker
+    dockerfilePath: ./Dockerfile
     autoDeploy: true
