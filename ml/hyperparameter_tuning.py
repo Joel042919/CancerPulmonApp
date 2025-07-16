@@ -52,7 +52,7 @@ def build_model(hp):
     
     return model
 
-def tune_hyperparameters(data_dir, max_epochs=50, executions_per_trial=1):
+def tune_hyperparameters(data_dir, max_epochs=20, executions_per_trial=1):
     """Ejecuta la optimización de hiperparámetros"""
     # Configurar el tuner
     tuner = kt.Hyperband(

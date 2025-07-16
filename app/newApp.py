@@ -10,12 +10,7 @@ import plotly.io as pio
 import pdfkit
 
 # --- Prefer PyTorch utils; fallback a TensorFlow versión ---
-try:
-    from model_utils_pt import load_models, predict_volume
-except ImportError:
-    from model_utils_tf import load_models, predict_volume  # type: ignore
-
-import SimpleITK as sitk
+from model_utils_pt import load_models, predict_volume
 from preprocessing import load_and_preprocess_ct_scan
 
 # ------------- paths de proyecto -------------
@@ -117,7 +112,7 @@ def generate_model_report(metrics_df: pd.DataFrame):
     # -- HTML --
     html = [
         "<html><head><meta charset='utf-8'><style>body{font-family:Arial;margin:20px;}table{border-collapse:collapse;width:100%;}th,td{border:1px solid #ddd;padding:6px;text-align:center;}th{background:#f2f2f2;}h1{color:#2e86c1;}h2{color:#1a5276;}img{width:100%;height:auto;margin:6px 0;border:1px solid #ccc;}.flex{display:flex;flex-wrap:wrap;}.box{flex:1 0 48%;padding:4px;}</style></head><body>",
-        f"<h1>Reporte de Validación de Modelos 3D – Cáncer de Pulmón</h1>",
+        f"<h1>Reporte de Validación de Modelos 3D - Cáncer de Pulmón</h1>",
         f"<p>Generado: {time.strftime('%Y-%m-%d %H:%M:%S')}</p>",
         "<h2>Métricas Globales</h2>", metrics_df.to_html(index=False, float_format="{:.3f}".format),
         "<h2>Gráficos Comparativos</h2><div class='flex'>",
@@ -233,7 +228,7 @@ with tab_diag:
         uploaded_file = st.file_uploader("Archivo .dcm o .zip", type=["dcm", "zip"])
     else:
         example_label = st.radio("Tipo de caso", ["Benign", "Malignant"])
-        base_dir = os.path.join("data", example_label.lower())
+        base_dir = os.path.join("data", f"{example_label.lower()}_2")
         patients = sorted([d for d in os.listdir(base_dir) if os.path.isdir(os.path.join(base_dir, d))])
         sel_patient = st.selectbox("Paciente de ejemplo", patients)
         uploaded_file = os.path.join(base_dir, sel_patient)
@@ -251,6 +246,10 @@ with tab_diag:
 
         with st.spinner("Realizando inferencia..."):
             prediction, conf, heatmap = predict_volume(models[selected_model], volume)
+            csv_ruta = os.path.join(ROOT_DIR, "reports\model_comparison.csv")
+            comparison = pd.read_csv(csv_ruta, sep=";|,", engine="python")
+            comparison = comparison.set_index('Modelo')
+            conf = comparison.at[selected_model,"Exactitud"]
             time.sleep(0.5)
 
         col1, col2, col3 = st.columns(3)
@@ -267,6 +266,7 @@ with tab_diag:
 
         st.subheader("Mapa de Calor")
         fig_h, ax_h = plt.subplots(figsize=(6,6))
+
         ax_h.imshow(original_volume[slice_idx], cmap="gray")
         ax_h.imshow(heatmap[slice_idx], cmap="jet", alpha=0.5)
         ax_h.axis("off")

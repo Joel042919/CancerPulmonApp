@@ -56,24 +56,6 @@ def load_dicom_series(directory):
     spacing = image.GetSpacing()
     return volume, spacing
 
-
-def load_dicom_series_REPARANDO(directory):
-    """Carga una serie DICOM desde un directorio, incluso si hay subcarpetas."""
-    reader = sitk.ImageSeriesReader()
-    # obtiene todas las SeriesUIDs en el directorio
-    series_IDs = reader.GetGDCMSeriesIDs(directory)
-    if not series_IDs:
-        raise RuntimeError(f"No se encontró ninguna serie DICOM en {directory}")
-    # escoge la primera serie
-    series_files = reader.GetGDCMSeriesFileNames(directory, series_IDs[0])
-    reader.SetFileNames(series_files)
-    image = reader.Execute()
-
-    volume = sitk.GetArrayFromImage(image)
-    # SimpleITK usa (z,y,x); tu pipeline espera (x,y,z)
-    volume = volume.transpose((2,1,0))
-    spacing = image.GetSpacing()
-    return volume, spacing
                                             #target_size=(128, 128, 128)
 def load_and_preprocess_ct_scan(input_path, target_size=(64,64,64)):
     
@@ -86,17 +68,17 @@ def load_and_preprocess_ct_scan(input_path, target_size=(64,64,64)):
     #    original_volume: Volumen original (redimensionado)
     
     # Cargar datos según el tipo de entrada
-    if isinstance(input_path, str) and input_path.endswith('.zip'):
+    if isinstance(input_path, str) and input_path.lower().endswith('.zip'):
         # Extraer archivo zip
         with zipfile.ZipFile(input_path, 'r') as zip_ref:
-            temp_dir = 'temp_dicom'
+            temp_dir = os.path.splitext(input_path)[0]
             zip_ref.extractall(temp_dir)
             input_path = temp_dir
     
     if os.path.isdir(input_path):
         # BUSCAR .mhd RECURSIVAMENTE
         mhd_file = None
-        for root, dirs, files in os.walk(input_path):
+        for root, _, files in os.walk(input_path):
             for f in files:
                 if f.lower().endswith('.mhd'):
                     mhd_file = os.path.join(root, f)
@@ -118,6 +100,11 @@ def load_and_preprocess_ct_scan(input_path, target_size=(64,64,64)):
         volume = ds.pixel_array
         spacing = (1.0, 1.0, 1.0)  # Asumir si no hay información
     
+
+    if volume.ndim == 2:                         # NEW: DICOM 2-D
+        volume  = np.expand_dims(volume, axis=0) # (1, Y, X)
+        spacing = spacing[:2] + (1.0,)
+
     # Guardar volumen original (para visualización)
     original_volume = resize(volume, target_size, mode='reflect', anti_aliasing=True)
     

@@ -1,4 +1,11 @@
 data/
-temp_dicom/
+.venv/
 .vscode/
 models/
+reports/figures_2
+reports/figures_3
+reports/figures_old
+ml/
+logs/
+app/matriz.py
+app/newApp.py

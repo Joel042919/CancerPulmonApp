@@ -1,182 +1,149 @@
-import os
-import sys
-from datetime import datetime
-
-# ------------------ CPU OPTIMIZATIONS ------------------
-import numpy as np
-# Ajuste de hilos para BLAS/OpenMP
-num_threads = os.cpu_count() or 1
-os.environ["OMP_NUM_THREADS"] = str(num_threads)
-os.environ["MKL_NUM_THREADS"] = str(num_threads)
-os.environ["OPENBLAS_NUM_THREADS"] = str(num_threads)
-
-# PyTorch configuración de hilos
-import torch
-torch.set_num_threads(num_threads)
-torch.set_num_interop_threads(1)
-
-# ------------------ PATHS ------------------
+# ──────────────────────────────────────────────────────────────────────
+# 1. IMPORTS & CONFIG
+# ──────────────────────────────────────────────────────────────────────
+import os, sys, random, logging, warnings
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
+os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
+logging.getLogger("tensorflow").setLevel(logging.ERROR)
+warnings.filterwarnings("ignore")
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 if ROOT_DIR not in sys.path:
     sys.path.insert(0, ROOT_DIR)
-
-# ------------------ Imports de librerías ------------------
-from torch.utils.data import Dataset, DataLoader
+import numpy as np, torch, pandas as pd
+from torch.utils.data import Dataset, DataLoader, WeightedRandomSampler
+from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import train_test_split
+from tqdm.auto import tqdm
 
-# Tus módulos 3D
-from app.model_utils_pt import load_models          # carga dict{name: nn.Module}
+# Ajusta aquí:
+DATA_DIR    = "data"
+TARGET_SHAPE = (96, 96, 96)
+BATCH_SIZE   = 2
+EPOCHS_MAX   = 50
+LR_INIT      = 3e-4
+EARLY_STOP   = 6            # épocas sin mejora
+DEVICE       = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+NUM_WORKERS  = 0            # 0 = CPU-friendly en Windows
+
+# ──────────────────────────────────────────────────────────────────────
+# 2. DATASET
+# ──────────────────────────────────────────────────────────────────────
 from app.preprocessing import load_and_preprocess_ct_scan
 
-# ------------------ Carga de datos ------------------
-def load_train_val(data_dir, val_size=0.2, random_state=42, max_cases=None):
-    """
-    Lee benign/ y malignant/ (80%) y separa en train/val.
-    """
-    benign_dir = os.path.join(data_dir, 'benign')
-    malignant_dir = os.path.join(data_dir, 'malignant')
-
-    benign = [os.path.join(benign_dir, f) for f in os.listdir(benign_dir)]
-    malignant = [os.path.join(malignant_dir, f) for f in os.listdir(malignant_dir)]
-
-    all_cases = benign + malignant
-    all_labels = [0]*len(benign) + [1]*len(malignant)
-
-    if max_cases is not None:
-        rng = np.random.RandomState(random_state)
-        idx = rng.permutation(len(all_cases))[:max_cases]
-        all_cases = [all_cases[i] for i in idx]
-        all_labels = [all_labels[i] for i in idx]
-
-    train_c, val_c, train_l, val_l = train_test_split(
-        all_cases, all_labels,
-        test_size=val_size,
-        stratify=all_labels,
-        random_state=random_state
-    )
-    return train_c, val_c, train_l, val_l
-
-
-def load_test(data_dir):
-    """
-    Lee benign_test/ y malignant_test/ como test final.
-    """
-    bt = os.path.join(data_dir, 'benign_test')
-    mt = os.path.join(data_dir, 'malignant_test')
-
-    benign_test = [os.path.join(bt, f) for f in os.listdir(bt)]
-    malignant_test = [os.path.join(mt, f) for f in os.listdir(mt)]
-
-    cases = benign_test + malignant_test
-    labels = [0]*len(benign_test) + [1]*len(malignant_test)
-    return cases, labels
-
-# ------------------ Dataset PyTorch 3D ------------------
 class CTScanDataset(Dataset):
-    def __init__(self, cases, labels, target_size=(64,64,64)):
-        self.cases = cases
-        self.labels = labels
-        self.target_size = target_size
+    def __init__(self, cases, labels, target_size=TARGET_SHAPE, augment=False):
+        self.cases, self.labels = cases, labels
+        self.target_size, self.augment = target_size, augment
 
-    def __len__(self):
-        return len(self.cases)
+    def __len__(self): return len(self.cases)
 
     def __getitem__(self, idx):
         vol, _ = load_and_preprocess_ct_scan(self.cases[idx], self.target_size)
-        vol = np.expand_dims(vol, 0)               # (1, D, H, W)
-        x = torch.from_numpy(vol).float()
-        y = torch.tensor(self.labels[idx]).float()
-        return x, y
 
-# ------------------ Entrenamiento PyTorch 3D ------------------
+        if self.augment:
+            if random.random() < .5: vol = np.flip(vol, axis=0)
+            if random.random() < .5: vol = np.rot90(vol, 1, (1, 2))
+
+        vol = np.expand_dims(vol, 0)             # (1, D, H, W)
+        vol = np.ascontiguousarray(vol)          # evita strides negativos
+        return torch.from_numpy(vol).float(), torch.tensor(self.labels[idx]).float()
+
+def load_dataset(data_dir, test_size=.2, random_state=42):
+    b_dir = os.path.join(data_dir, "benign_2")
+    m_dir = os.path.join(data_dir, "malignant_2")
+    benign    = [os.path.join(b_dir, f) for f in os.listdir(b_dir)]
+    malignant = [os.path.join(m_dir, f) for f in os.listdir(m_dir)]
+    labels = [0]*len(benign) + [1]*len(malignant)
+    cases  = benign + malignant
+    return train_test_split(cases, labels, test_size=test_size,
+                            stratify=labels, random_state=random_state)
+
+# ──────────────────────────────────────────────────────────────────────
+# 3. TRAINER
+# ──────────────────────────────────────────────────────────────────────
 def train_model_pt(model, train_loader, val_loader,
-                   epochs=20, model_name='lung_cancer_model', lr=1e-4):
-    """
-    Entrena un modelo 3D en PyTorch. Guarda pesos en carpeta models/.
-    """
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    model.to(device)
-    criterion = torch.nn.BCEWithLogitsLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+                   epochs=EPOCHS_MAX, model_name="model"):
+    model.to(DEVICE)
+    # ─── Loss con pos_weight
+    y_train = np.array(train_loader.dataset.labels)
+    pos_w   = (len(y_train)-y_train.sum()) / y_train.sum()
+    criterion = torch.nn.BCEWithLogitsLoss(pos_weight=torch.tensor([pos_w]).to(DEVICE))
+    optimizer = torch.optim.Adam(model.parameters(), lr=LR_INIT, weight_decay=1e-4)
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+        optimizer, mode="max", factor=0.3, patience=3, min_lr=1e-6)
 
-    best_val_loss = float('inf')
-    patience = 7
-    no_improve = 0
+    best_auc, epochs_no_imp, log = 0.0, 0, []
 
-    os.makedirs('models', exist_ok=True)
-
-    for ep in range(1, epochs+1):
-        model.train()
-        for x, y in train_loader:
-            x = x.to(device)
-            y = y.to(device).unsqueeze(1)
+    for epoch in range(1, epochs+1):
+        # ——— TRAIN ———
+        model.train(); train_loss = 0.0
+        for x, y in tqdm(train_loader, desc=f"Ep {epoch}/{epochs}", leave=False):
+            x, y = x.to(DEVICE), y.to(DEVICE).unsqueeze(1)
             optimizer.zero_grad()
-            logits = model(x)
-            loss = criterion(logits, y)
+            loss = criterion(model(x), y)
             loss.backward()
             optimizer.step()
+            train_loss += loss.item()
 
-        # Validación
-        model.eval()
-        val_loss, correct, total = 0.0, 0, 0
+        # ——— VALIDATE ———
+        model.eval(); val_loss, preds, gts = 0.0, [], []
         with torch.no_grad():
             for x, y in val_loader:
-                x = x.to(device)
-                y = y.to(device).unsqueeze(1)
+                x, y = x.to(DEVICE), y.to(DEVICE).unsqueeze(1)
                 logits = model(x)
                 val_loss += criterion(logits, y).item()
-                preds = (torch.sigmoid(logits) > 0.5).int()
-                correct += (preds == y.int()).sum().item()
-                total += y.size(0)
-        avg_val = val_loss / len(val_loader)
-        acc_val = correct / total
-        print(f"[Epoch {ep}/{epochs}] val_loss={avg_val:.4f} val_acc={acc_val:.2%}")
+                prob = torch.sigmoid(logits).cpu().numpy().ravel()
+                preds.extend(prob)
+                gts.extend(y.cpu().numpy().ravel())
 
-        # Chequeo de EarlyStopping
-        if avg_val < best_val_loss:
-            best_val_loss = avg_val
-            no_improve = 0
-            torch.save(model.state_dict(), f"models/{model_name}.pth")
-            print(f"✔ Guardado mejor modelo: models/{model_name}.pth")
+        val_loss /= len(val_loader)
+        val_auc   = roc_auc_score(gts, preds)
+        val_acc   = ((np.array(preds) > 0.5) == np.array(gts)).mean()
+        scheduler.step(val_auc)
+
+        print(f"Epoch {epoch:02d}  train_loss {train_loss/len(train_loader):.4f}  "
+              f"val_loss {val_loss:.4f}  val_auc {val_auc:.3f}  val_acc {val_acc:.3f}")
+
+        log.append([epoch, train_loss/len(train_loader), val_loss, val_auc, val_acc])
+
+        # ——— Checkpoint / Early-Stop ———
+        if val_auc > best_auc + 1e-4:          # mejora mínima
+            best_auc = val_auc; epochs_no_imp = 0
+            torch.save(model.state_dict(), f"models/{model_name}_best.pth")
+            print(f"  🔖  Nuevo mejor AUC = {best_auc:.3f} → modelo guardado")
         else:
-            no_improve += 1
-            if no_improve >= patience:
-                print(f"⚠️ Stop early por {patience} epochs sin mejora.")
+            epochs_no_imp += 1
+            if epochs_no_imp >= EARLY_STOP:
+                print("⏹ Early-Stopping: sin mejora en", EARLY_STOP, "épocas")
                 break
 
-# ------------------ Main ------------------
+    pd.DataFrame(log, columns=["epoch","train_loss","val_loss","val_auc","val_acc"])\
+      .to_csv(f"models/{model_name}_history.csv", index=False)
+
+# ──────────────────────────────────────────────────────────────────────
+# 4. MAIN
+# ──────────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
-    data_dir = 'data'  # Debe tener benign/, malignant/, benign_test/, malignant_test/
+    os.makedirs("models", exist_ok=True)
 
-    # Split interno train/val
-    train_cases, val_cases, train_labels, val_labels = load_train_val(
-        data_dir, val_size=0.2, random_state=42, max_cases=None
-    )
-    # Test final
-    test_cases, test_labels = load_test(data_dir)
+    tr_c, val_c, y_tr, y_val = load_dataset(DATA_DIR)
+    train_ds = CTScanDataset(tr_c, y_tr, augment=True)
+    val_ds   = CTScanDataset(val_c, y_val, augment=False)
 
-    # DataLoaders CPU-optimizado
-    train_ds = CTScanDataset(train_cases, train_labels)
-    val_ds   = CTScanDataset(val_cases,   val_labels)
-    train_loader = DataLoader(
-        train_ds, batch_size=2, shuffle=True,
-        num_workers=num_threads, pin_memory=False
-    )
-    val_loader = DataLoader(
-        val_ds, batch_size=2, shuffle=False,
-        num_workers=num_threads, pin_memory=False
-    )
+    # sampler balanceado
+    class_counts = np.bincount(y_tr)
+    weights = 1.0 / class_counts[y_tr]
+    sampler = WeightedRandomSampler(weights, num_samples=len(train_ds), replacement=True)
 
-    # Carga y entrenamiento de modelos 3D
-    models = load_models()
-    for name, model in models.items():
-        print(f"\n=== Entrenando modelo: {name} ===")
-        train_model_pt(
-            model,
-            train_loader,
-            val_loader,
-            epochs=15,
-            model_name=name.lower().replace(' ', '_')
-        )
+    train_dl = DataLoader(train_ds, batch_size=BATCH_SIZE, sampler=sampler,
+                          num_workers=NUM_WORKERS, pin_memory=True)
+    val_dl   = DataLoader(val_ds,   batch_size=BATCH_SIZE, shuffle=False,
+                          num_workers=NUM_WORKERS, pin_memory=True)
 
-    print("\n🎉 Entrenamiento completado.")
+    from app.model_utils_pt import load_models
+    torch.set_num_threads(min(32, os.cpu_count()))
+    for name, net in load_models().items():
+        print(f"\n==== Entrenando {name} ====")
+        train_model_pt(net, train_dl, val_dl,
+                       epochs=EPOCHS_MAX,
+                       model_name=name.lower().replace(" ", "_"))

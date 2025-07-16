@@ -5,8 +5,11 @@ from keras.callbacks import (
     ReduceLROnPlateau,
     TensorBoard
 )
-
-import os, sys
+import os, logging
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
+os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
+logging.getLogger("tensorflow").setLevel(logging.ERROR)
+import sys
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 if ROOT_DIR not in sys.path:
     sys.path.insert(0, ROOT_DIR)
@@ -19,14 +22,15 @@ from datetime import datetime
 from sklearn.model_selection import train_test_split
 from torch.utils.data import Dataset, DataLoader
 import torch
-
+from tqdm.auto import tqdm
+from sklearn.metrics import roc_auc_score
 
 
 def load_dataset(data_dir, test_size=0.2, random_state=42, max_cases=None):
     """Carga y divide el dataset en entrenamiento y validación"""
     # Obtener listas de casos benignos y malignos
-    benign_cases = [os.path.join(data_dir, 'benign', f) for f in os.listdir(os.path.join(data_dir, 'benign'))]
-    malignant_cases = [os.path.join(data_dir, 'malignant', f) for f in os.listdir(os.path.join(data_dir, 'malignant'))]
+    benign_cases = [os.path.join(data_dir, 'benign_2', f) for f in os.listdir(os.path.join(data_dir, 'benign_2'))]
+    malignant_cases = [os.path.join(data_dir, 'malignant_2', f) for f in os.listdir(os.path.join(data_dir, 'malignant_2'))]
     
     # Crear etiquetas
     benign_labels = [0] * len(benign_cases)
@@ -114,9 +118,12 @@ def train_model(model, train_generator, val_generator, epochs=100, model_name='l
 def train_model_pt(model, train_loader, val_loader, epochs=20,
                    model_name='lung_cancer_model', lr=1e-4):
     device = next(model.parameters()).device
-    criterion = torch.nn.BCEWithLogitsLoss()
+    # en train_model_pt
+    pos = sum(train_labels); neg = len(train_labels)-pos
+    pos_weight = torch.tensor([neg/pos]).to(device)
+    criterion = torch.nn.BCEWithLogitsLoss(pos_weight=pos_weight)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
-
+    best_auc = 0
     for epoch in range(epochs):
         model.train()
         for x, y in train_loader:
@@ -128,19 +135,29 @@ def train_model_pt(model, train_loader, val_loader, epochs=20,
             optimizer.step()
 
         # --- validación rápida ---
-        model.eval(); val_loss, correct, total = 0, 0, 0
+        model.eval(); val_loss, gt, pred = 0, [], []
         with torch.no_grad():
             for x, y in val_loader:
                 x, y = x.to(device), y.to(device).unsqueeze(1)
                 logits = model(x); val_loss += criterion(logits, y).item()
                 preds = (torch.sigmoid(logits) > 0.5).int()
                 correct += (preds == y.int()).sum().item(); total += y.size(0)
+                val_loss += criterion(logits, y).item()
+                pred.extend(torch.sigmoid(logits).cpu().numpy().ravel())
+                gt.extend(y.cpu().numpy())
+        val_loss /= len(val_loader)
+        val_auc   = roc_auc_score(gt, pred)
         print(f"Epoch {epoch+1}/{epochs}  "
               f"val_loss={val_loss/len(val_loader):.4f}  "
               f"val_acc={correct/total:.3f}")
+        if val_auc > best_auc:                # ⇦ usa AUC
+            best_auc = val_auc
+            torch.save(model.state_dict(),
+                       f"models/{model_name}_best.pth")
+            print(f"  🔖  Nuevo mejor AUC ({best_auc:.3f}) → modelo guardado")
 
     # Guarda pesos
-    torch.save(model.state_dict(), f"models/{model_name}.pth")
+    #torch.save(model.state_dict(), f"models/{model_name}.pth")
 
 
 
@@ -159,7 +176,7 @@ if __name__ == "__main__":
     train_ds = CTScanDataset(train_cases, train_labels,target_size=(96,96,96))
     val_ds   = CTScanDataset(val_cases, val_labels,target_size=(96,96,96))
     train_loader = DataLoader(train_ds, batch_size=2, shuffle=True, num_workers=os.cpu_count()//2, pin_memory=True)
-    val_loader   = DataLoader(val_ds,   batch_size=2, shuffle=False)
+    val_loader   = DataLoader(val_ds,   batch_size=2, shuffle=False, num_workers=os.cpu_count()//2, pin_memory=True)
 
     # Cargar y entrenar modelos
     models = load_models()

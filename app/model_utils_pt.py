@@ -1,7 +1,11 @@
-import os
+import os, logging
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
+os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
+logging.getLogger("tensorflow").setLevel(logging.ERROR)
 import numpy as np
 import torch
 import torch.nn as nn
+import scipy.ndimage
 from monai.networks.nets import resnet, densenet
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -67,7 +71,8 @@ def load_models():
 
     # Cargar pesos (.pth) si existen
     for name, model in models.items():
-        path = f'models/{name.lower().replace(" ", "_")}_lung_cancer.pth'
+        #path = f'models/{name.lower().replace(" ", "_")}_lung_cancer.pth'
+        path = f'models/{name.lower().replace(" ", "_")}_best.pth'
         if os.path.isfile(path):
             model.load_state_dict(torch.load(path, map_location=device))
         else:
@@ -99,6 +104,11 @@ def predict_volume(model, volume):
         diagnosis = int(prob > 0.5)
 
     heatmap = generate_saliency_map(model, input_tensor)
+    #heatmap = scipy.ndimage.zoom(
+    #    heatmap,
+    #    zoom=tuple(o/h for o, h in zip(volume.shape, heatmap.shape)),
+    #    order=1
+    #)
     return diagnosis, float(prob), heatmap
 
 def generate_saliency_map(model, input_tensor):
