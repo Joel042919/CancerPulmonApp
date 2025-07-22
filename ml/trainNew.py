@@ -14,6 +14,7 @@ from torch.utils.data import Dataset, DataLoader, WeightedRandomSampler
 from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import train_test_split
 from tqdm.auto import tqdm
+from app.augmentations import get_train_transforms
 
 # Ajusta aquí:
 DATA_DIR    = "data"
@@ -31,22 +32,39 @@ NUM_WORKERS  = 0            # 0 = CPU-friendly en Windows
 from app.preprocessing import load_and_preprocess_ct_scan
 
 class CTScanDataset(Dataset):
-    def __init__(self, cases, labels, target_size=TARGET_SHAPE, augment=False):
-        self.cases, self.labels = cases, labels
-        self.target_size, self.augment = target_size, augment
+    def __init__(self, cases, labels, target_size=TARGET_SHAPE,transforms=None):
+        self.cases=cases 
+        self.labels = labels
+        self.target_size=target_size
+        self.transforms = transforms
 
     def __len__(self): return len(self.cases)
 
     def __getitem__(self, idx):
-        vol, _ = load_and_preprocess_ct_scan(self.cases[idx], self.target_size)
+        vol, _ = load_and_preprocess_ct_scan(
+            self.cases[idx], self.target_size
+        )
 
-        if self.augment:
-            if random.random() < .5: vol = np.flip(vol, axis=0)
-            if random.random() < .5: vol = np.rot90(vol, 1, (1, 2))
+        #if self.augment:
+        #    if random.random() < .5: vol = np.flip(vol, axis=0)
+        #    if random.random() < .5: vol = np.rot90(vol, 1, (1, 2))
 
         vol = np.expand_dims(vol, 0)             # (1, D, H, W)
-        vol = np.ascontiguousarray(vol)          # evita strides negativos
-        return torch.from_numpy(vol).float(), torch.tensor(self.labels[idx]).float()
+        #vol = np.ascontiguousarray(vol)          # evita strides negativos
+        if self.transforms:
+            vol = self.transforms({"image": vol})["image"]
+
+        if isinstance(vol, torch.Tensor):          # ya es Tensor / MetaTensor
+            vol_tensor = vol.float()
+        else:                                      # es ndarray
+            vol_tensor = torch.from_numpy(
+                np.ascontiguousarray(vol)
+            ).float()
+
+        label_tensor = torch.tensor(self.labels[idx]).float()
+        return vol_tensor, label_tensor
+    
+        #return torch.from_numpy(vol).float(), torch.tensor(self.labels[idx]).float()
 
 def load_dataset(data_dir, test_size=.2, random_state=42):
     b_dir = os.path.join(data_dir, "benign_2")
@@ -127,8 +145,12 @@ if __name__ == "__main__":
     os.makedirs("models", exist_ok=True)
 
     tr_c, val_c, y_tr, y_val = load_dataset(DATA_DIR)
-    train_ds = CTScanDataset(tr_c, y_tr, augment=True)
-    val_ds   = CTScanDataset(val_c, y_val, augment=False)
+    train_ds = CTScanDataset(
+                    tr_c, 
+                    y_tr, 
+                    transforms=get_train_transforms()   # ← AUGMENTACIONES
+                )
+    val_ds   = CTScanDataset(val_c, y_val, transforms=None)
 
     # sampler balanceado
     class_counts = np.bincount(y_tr)

@@ -2,10 +2,8 @@ data/
 .venv/
 .vscode/
 models/*.csv
-reports/figures_2
-reports/figures_3
-reports/figures_old
 ml/
 logs/
+app/mainDocker.py
 app/matriz.py
-app/newApp.py
+app/newMatriz.py

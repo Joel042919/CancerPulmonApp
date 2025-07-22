@@ -6,10 +6,10 @@ import numpy as np
 import torch
 import torch.nn as nn
 from monai.networks.nets import resnet, densenet
-ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-if ROOT_DIR not in sys.path:
-    sys.path.insert(0, ROOT_DIR)
-from app.models_hybrid import ResNet50SE, DenseNet121AE
+#ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+#if ROOT_DIR not in sys.path:
+#    sys.path.insert(0, ROOT_DIR)
+from models_hybrid import ResNet50SE, DenseNet121AE
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 def load_models():

@@ -1,45 +1,29 @@
-#################################################################
-#  Dockerfile para  detectar-cancer-pulmon  (Streamlit + Torch) #
-#################################################################
+# --- Base ---------------------------------------------------------------
+FROM python:3.11-slim
 
-# ---------- Imagen base ----------
-FROM python:3.10-slim           # pequeñita, compatible con SimpleITK
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    STREAMLIT_BROWSER_GATHER_USAGE_STATS=false \
+    APP_HOME=/LUNG_CANCER_DETECTION_APP
 
-# ---------- Ajustes de entorno ----------
-ENV PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=1 \
-    DEBIAN_FRONTEND=noninteractive
-
-# ---------- Paquetes del sistema ----------
-# wkhtmltopdf + Git LFS + dependencias mínimas de Qt y OpenGL
+# --- System deps --------------------------------------------------------
 RUN apt-get update && apt-get install -y --no-install-recommends \
-      wkhtmltopdf \
-      git git-lfs \
-      libglib2.0-0 libgl1 libxext6 libxrender1 \
-   && rm -rf /var/lib/apt/lists/*
+        build-essential git wget curl \
+        libgl1 libglib2.0-0 libstdc++6 \
+        libxext6 libxrender1 libx11-6 \
+        xfonts-base xfonts-75dpi \
+        wkhtmltopdf \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN git lfs install --system
+# --- Python deps --------------------------------------------------------
+WORKDIR ${APP_HOME}
+COPY requirements.txt .
+RUN python -m pip install --no-cache-dir --timeout 100 -r requirements.txt
 
-# ---------- Workspace ----------
-WORKDIR /app
-COPY requirements.txt ./
-
-# ---------- Python deps ----------
-RUN pip install --upgrade pip \
- && pip install -r requirements.txt
-
-# ---------- Copia del proyecto ----------
+# --- App code -----------------------------------------------------------
 COPY . .
+# Crear enlace /reports → /LUNG_CANCER_DETECTION_APP/reports
+RUN ln -s ${APP_HOME}/reports /reports
 
-# ---------- Descarga de pesos gestionados por LFS ----------
-RUN git lfs pull
-
-# ---------- Exponer puerto ----------
-EXPOSE 8501      # Render sobrescribe, pero es buena práctica
-
-# ---------- Arranque ----------
-#  Usamos la forma “shell” para que $PORT se expanda dentro del contenedor
-CMD streamlit run app/main.py \
-      --server.headless true \
-      --server.port $PORT \
-      --server.address 0.0.0.0
+EXPOSE 8501
+CMD ["streamlit", "run", "main.py", "--server.port", "8501", "--server.address", "0.0.0.0"]

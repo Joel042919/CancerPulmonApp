@@ -8,11 +8,16 @@ kaleido==1.0.0           # exportar PNG de Plotly
 
 # medical-image stack
 torch==2.6.0              # < 2.7.0 para no chocar con MONAI
+-f https://download.pytorch.org/whl/cpu
 monai==1.5.0
 simpleitk==2.5.2
 pydicom==3.0.1
 scikit-image==0.25.2      # incluye skimage.transform/exposure
 scipy==1.15.3
+
+# augmentations
+albumentations==1.4.0
+#opencv-python-headless==4.12.0.88   # evita conflictos con la versión con GUI
 
 # utilidades
 pdfkit==1.0.0             # ↔ wkhtmltopdf (binary se instala aparte)

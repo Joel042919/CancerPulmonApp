@@ -1,0 +1,21 @@
+# Ignorar TODO por defecto
+**
+
+# ── Archivos que SÍ quiero copiar ─────────────────
+!Dockerfile
+!requirements.txt
+!main.py
+!preprocessing.py
+!model_utils_pt.py
+!models_hybrid.py
+!augmentations.py
+
+# Modelos y reportes
+!models/
+!models/**        # pesos .pth opcionales
+!reports/
+!reports/**
+!temp_dicom/
+
+# (opcional) incluye README si te sirve
+!README.md

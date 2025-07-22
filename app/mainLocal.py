@@ -477,17 +477,14 @@ ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if ROOT_DIR not in sys.path:
     sys.path.insert(0, ROOT_DIR)
 
+
 REPORT_DIR  = os.path.join(ROOT_DIR, "reports")
 FIG_DIR     = os.path.join(REPORT_DIR, "figures")
 MCNEMAR_DIR = os.path.join(FIG_DIR, "mcnemar")
 os.makedirs(REPORT_DIR, exist_ok=True)
 
-WKHTML = shutil.which("wkhtmltopdf")
-if WKHTML:
-    PDFKIT_CONFIG = pdfkit.configuration(wkhtmltopdf=WKHTML)
-else:
-    PDFKIT_CONFIG = None
-    logging.warning("wkhtmltopdf no encontrado; PDF deshabilitado")
+DEFAULT_WK = r"C:\\Program Files\\wkhtmltopdf\\bin\\wkhtmltopdf.exe"
+PDFKIT_CONFIG = pdfkit.configuration(wkhtmltopdf=DEFAULT_WK)
 PDFKIT_OPTS   = {"enable-local-file-access": None}
 
 # --------------- 3. Apariencia global ----------------------
@@ -799,9 +796,11 @@ def section_report():
         with st.spinner(tr("generating_pdf")):
             pdf_bytes = generate_pdf(df, st.session_state.get("latest_diag"))
         if pdf_bytes:
-            b64 = base64.b64encode(pdf_bytes).decode()
-            st.markdown(f"<iframe src='data:application/pdf;base64,{b64}' width='100%' height='800px'></iframe>", unsafe_allow_html=True)
-            st.download_button(label="⬇️ PDF", data=pdf_bytes, mime="application/pdf", file_name="reporte_modelos_pulmon.pdf")
+            b64 = base64.b64encode(pdf_bytes).decode().replace("\n","")
+            #import streamlit.components.v1 as reporteB
+            #reporteB.iframe(f"data:application/pdf;base64,{b64}",height=800, scrolling=True)
+            st.markdown(f"<iframe src='data:application/pdf;base64,{b64}' width='100%' height='800' type='application/pdf' style='overflow: auto; width: 100%; height: 100%;'></iframe>", unsafe_allow_html=True)
+            st.download_button(label="⬇️ PDF", data=pdf_bytes, mime="application/pdf", file_name="professor_report.pdf")
 
 # --------------- 10. Renderizado Final ---------------------
 st.title(tr("app_title"))

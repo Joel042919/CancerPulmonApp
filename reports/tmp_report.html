@@ -1,19 +1,4 @@
-<html><head><meta charset='utf-8'><style>body{font-family:Arial;margin:20px;}table{border-collapse:collapse;width:100%;}th,td{border:1px solid #ddd;padding:6px;text-align:center;}th{background:#f2f2f2;}h1{color:#2e86c1;}h2{color:#1a5276;}img{width:100%;height:auto;margin:6px 0;border:1px solid #ccc;}.flex{display:flex;flex-wrap:wrap;}.box{flex:1 0 48%;padding:4px;}</style></head><body><h1>Rapport de Validation des Modèles 3D - Cancer du Poumon</h1><p>Généré: 2025-07-15 19:58:24</p><h2>Résumé du Diagnostic Récent</h2>
-            <table>
-                <tr>
-                    <th>Modèle</th>
-                    <th>Prédiction</th>
-                    <th>Confiance</th>
-                    <th>Info</th>
-                </tr>
-                <tr>
-                    <td>3D ResNet50</td>
-                    <td>Négatif</td>
-                    <td>91.33%</td>
-                    <td>Aucun nodule suspect détecté.</td>
-                </tr>
-            </table>
-        <div class='flex'><div class='box'><img src='file:///C:/UNIVERSIDAD/9 - CICLO/ING. SOFTWARE/TRABAJO_GRUPAL_III_CANCER_PULMONES/LUNG_CANCER_DETECTION_APP/reports/latest_orig.png'></div><div class='box'><img src='file:///C:/UNIVERSIDAD/9 - CICLO/ING. SOFTWARE/TRABAJO_GRUPAL_III_CANCER_PULMONES/LUNG_CANCER_DETECTION_APP/reports/latest_proc.png'></div><div class='box'><img src='file:///C:/UNIVERSIDAD/9 - CICLO/ING. SOFTWARE/TRABAJO_GRUPAL_III_CANCER_PULMONES/LUNG_CANCER_DETECTION_APP/reports/latest_heat.png'></div></div><h2>Métriques Globales</h2><table border="1" class="dataframe">
+<html><head><meta charset='utf-8'><style>body{font-family:Arial;margin:20px;}table{border-collapse:collapse;width:100%;}th,td{border:1px solid #ddd;padding:6px;text-align:center;}th{background:#f2f2f2;}h1{color:#2e86c1;}h2{color:#1a5276;}img{width:100%;height:auto;margin:6px 0;border:1px solid #ccc;}.flex{display:flex;flex-wrap:wrap;}.box{flex:1 0 48%;padding:4px;}</style></head><body><h1>Reporte de Validación de Modelos 3D - Cáncer de Pulmón</h1><p>Generado: 2025-07-21 13:18:30</p><h2>Métricas Globales</h2><table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
       <th>Modelo</th>
@@ -31,17 +16,30 @@
   </thead>
   <tbody>
     <tr>
-      <td>3D DenseNet121</td>
-      <td>0.832</td>
-      <td>0.869</td>
-      <td>0.679</td>
-      <td>0.932</td>
-      <td>0.763</td>
-      <td>0.822</td>
-      <td>0.771</td>
-      <td>0.763</td>
-      <td>0.647</td>
-      <td>2.400</td>
+      <td>3D ResNet50 SE</td>
+      <td>0.980</td>
+      <td>0.974</td>
+      <td>0.974</td>
+      <td>0.983</td>
+      <td>0.974</td>
+      <td>0.969</td>
+      <td>0.951</td>
+      <td>0.974</td>
+      <td>0.957</td>
+      <td>2.800</td>
+    </tr>
+    <tr>
+      <td>3D DenseNet121 AE</td>
+      <td>0.944</td>
+      <td>0.935</td>
+      <td>0.923</td>
+      <td>0.958</td>
+      <td>0.929</td>
+      <td>0.928</td>
+      <td>0.921</td>
+      <td>0.929</td>
+      <td>0.883</td>
+      <td>2.600</td>
     </tr>
     <tr>
       <td>3D ResNet50</td>
@@ -54,7 +52,20 @@
       <td>0.822</td>
       <td>0.892</td>
       <td>0.819</td>
-      <td>2.900</td>
+      <td>2.400</td>
+    </tr>
+    <tr>
+      <td>3D DenseNet121</td>
+      <td>0.832</td>
+      <td>0.869</td>
+      <td>0.679</td>
+      <td>0.932</td>
+      <td>0.763</td>
+      <td>0.822</td>
+      <td>0.771</td>
+      <td>0.763</td>
+      <td>0.647</td>
+      <td>2.300</td>
     </tr>
     <tr>
       <td>CNN 3D Personalizada</td>
@@ -67,7 +78,7 @@
       <td>0.444</td>
       <td>0.541</td>
       <td>0.196</td>
-      <td>1.700</td>
+      <td>0.800</td>
     </tr>
   </tbody>
-</table><h2>Graphiques Comparatifs</h2><div class='flex'><div class='box'><img src='file:///C:/UNIVERSIDAD/9 - CICLO/ING. SOFTWARE/TRABAJO_GRUPAL_III_CANCER_PULMONES/LUNG_CANCER_DETECTION_APP/reports/temp_bar.png'></div><div class='box'><img src='file:///C:/UNIVERSIDAD/9 - CICLO/ING. SOFTWARE/TRABAJO_GRUPAL_III_CANCER_PULMONES/LUNG_CANCER_DETECTION_APP/reports/temp_scatter.png'></div><div class='box'><img src='file:///C:/UNIVERSIDAD/9 - CICLO/ING. SOFTWARE/TRABAJO_GRUPAL_III_CANCER_PULMONES/LUNG_CANCER_DETECTION_APP/reports/temp_polar.png'></div></div><h2>Courbe d'Optimisation des Hyper-paramètres</h2><img src='file:///C:/UNIVERSIDAD/9 - CICLO/ING. SOFTWARE/TRABAJO_GRUPAL_III_CANCER_PULMONES/LUNG_CANCER_DETECTION_APP/reports/temp_opt.png'><h2>Matrices de Confusion</h2><div class='flex'><div class='box'><img src='file:///C:/UNIVERSIDAD/9 - CICLO/ING. SOFTWARE/TRABAJO_GRUPAL_III_CANCER_PULMONES/LUNG_CANCER_DETECTION_APP/reports/figures/cm_3d_densenet121.png'></div><div class='box'><img src='file:///C:/UNIVERSIDAD/9 - CICLO/ING. SOFTWARE/TRABAJO_GRUPAL_III_CANCER_PULMONES/LUNG_CANCER_DETECTION_APP/reports/figures/cm_3d_resnet50.png'></div><div class='box'><img src='file:///C:/UNIVERSIDAD/9 - CICLO/ING. SOFTWARE/TRABAJO_GRUPAL_III_CANCER_PULMONES/LUNG_CANCER_DETECTION_APP/reports/figures/cm_cnn_3d_personalizado.png'></div></div><h2>Courbes ROC / PR</h2><div class='flex'><div class='box'><img src='file:///C:/UNIVERSIDAD/9 - CICLO/ING. SOFTWARE/TRABAJO_GRUPAL_III_CANCER_PULMONES/LUNG_CANCER_DETECTION_APP/reports/figures/roc_3d_densenet121.png'></div><div class='box'><img src='file:///C:/UNIVERSIDAD/9 - CICLO/ING. SOFTWARE/TRABAJO_GRUPAL_III_CANCER_PULMONES/LUNG_CANCER_DETECTION_APP/reports/figures/roc_3d_resnet50.png'></div><div class='box'><img src='file:///C:/UNIVERSIDAD/9 - CICLO/ING. SOFTWARE/TRABAJO_GRUPAL_III_CANCER_PULMONES/LUNG_CANCER_DETECTION_APP/reports/figures/roc_cnn_3d_personalizado.png'></div><div class='box'><img src='file:///C:/UNIVERSIDAD/9 - CICLO/ING. SOFTWARE/TRABAJO_GRUPAL_III_CANCER_PULMONES/LUNG_CANCER_DETECTION_APP/reports/figures/pr_3d_densenet121.png'></div><div class='box'><img src='file:///C:/UNIVERSIDAD/9 - CICLO/ING. SOFTWARE/TRABAJO_GRUPAL_III_CANCER_PULMONES/LUNG_CANCER_DETECTION_APP/reports/figures/pr_3d_resnet50.png'></div><div class='box'><img src='file:///C:/UNIVERSIDAD/9 - CICLO/ING. SOFTWARE/TRABAJO_GRUPAL_III_CANCER_PULMONES/LUNG_CANCER_DETECTION_APP/reports/figures/pr_cnn_3d_personalizado.png'></div></div><h2>Tests de McNemar</h2><div class='flex'><div class='box'><img src='file:///C:/UNIVERSIDAD/9 - CICLO/ING. SOFTWARE/TRABAJO_GRUPAL_III_CANCER_PULMONES/LUNG_CANCER_DETECTION_APP/reports/figures/mcnemar/mcnemar_3d_densenet121_vs_3d_resnet50.png'></div><div class='box'><img src='file:///C:/UNIVERSIDAD/9 - CICLO/ING. SOFTWARE/TRABAJO_GRUPAL_III_CANCER_PULMONES/LUNG_CANCER_DETECTION_APP/reports/figures/mcnemar/mcnemar_3d_densenet121_vs_cnn_3d_personalizado.png'></div><div class='box'><img src='file:///C:/UNIVERSIDAD/9 - CICLO/ING. SOFTWARE/TRABAJO_GRUPAL_III_CANCER_PULMONES/LUNG_CANCER_DETECTION_APP/reports/figures/mcnemar/mcnemar_3d_resnet50_vs_cnn_3d_personalizado.png'></div></div></body></html>
+</table><h2>Gráficos Comparativos</h2><div class='flex'><div class='box'><img src='file:///C:/UNIVERSIDAD/9 - CICLO/ING. SOFTWARE/TRABAJO_GRUPAL_III_CANCER_PULMONES/LUNG_CANCER_DETECTION_APP/reports/temp_bar.png'></div><div class='box'><img src='file:///C:/UNIVERSIDAD/9 - CICLO/ING. SOFTWARE/TRABAJO_GRUPAL_III_CANCER_PULMONES/LUNG_CANCER_DETECTION_APP/reports/temp_scatter.png'></div><div class='box'><img src='file:///C:/UNIVERSIDAD/9 - CICLO/ING. SOFTWARE/TRABAJO_GRUPAL_III_CANCER_PULMONES/LUNG_CANCER_DETECTION_APP/reports/temp_polar.png'></div></div><h2>Curva Optimización de Hiperparámetros</h2><img src='file:///C:/UNIVERSIDAD/9 - CICLO/ING. SOFTWARE/TRABAJO_GRUPAL_III_CANCER_PULMONES/LUNG_CANCER_DETECTION_APP/reports/temp_opt.png'><h2>Matrices de Confusión</h2><div class='flex'><div class='box'><img src='file:///C:/UNIVERSIDAD/9 - CICLO/ING. SOFTWARE/TRABAJO_GRUPAL_III_CANCER_PULMONES/LUNG_CANCER_DETECTION_APP/reports/figures/cm_3d_densenet121.png'></div><div class='box'><img src='file:///C:/UNIVERSIDAD/9 - CICLO/ING. SOFTWARE/TRABAJO_GRUPAL_III_CANCER_PULMONES/LUNG_CANCER_DETECTION_APP/reports/figures/cm_3d_densenet121_ae.png'></div><div class='box'><img src='file:///C:/UNIVERSIDAD/9 - CICLO/ING. SOFTWARE/TRABAJO_GRUPAL_III_CANCER_PULMONES/LUNG_CANCER_DETECTION_APP/reports/figures/cm_3d_resnet50.png'></div><div class='box'><img src='file:///C:/UNIVERSIDAD/9 - CICLO/ING. SOFTWARE/TRABAJO_GRUPAL_III_CANCER_PULMONES/LUNG_CANCER_DETECTION_APP/reports/figures/cm_3d_resnet50_se.png'></div><div class='box'><img src='file:///C:/UNIVERSIDAD/9 - CICLO/ING. SOFTWARE/TRABAJO_GRUPAL_III_CANCER_PULMONES/LUNG_CANCER_DETECTION_APP/reports/figures/cm_cnn_3d_personalizado.png'></div></div><h2>Curvas ROC / PR</h2><div class='flex'><div class='box'><img src='file:///C:/UNIVERSIDAD/9 - CICLO/ING. SOFTWARE/TRABAJO_GRUPAL_III_CANCER_PULMONES/LUNG_CANCER_DETECTION_APP/reports/figures/roc_3d_densenet121.png'></div><div class='box'><img src='file:///C:/UNIVERSIDAD/9 - CICLO/ING. SOFTWARE/TRABAJO_GRUPAL_III_CANCER_PULMONES/LUNG_CANCER_DETECTION_APP/reports/figures/roc_3d_densenet121_ae.png'></div><div class='box'><img src='file:///C:/UNIVERSIDAD/9 - CICLO/ING. SOFTWARE/TRABAJO_GRUPAL_III_CANCER_PULMONES/LUNG_CANCER_DETECTION_APP/reports/figures/roc_3d_resnet50.png'></div><div class='box'><img src='file:///C:/UNIVERSIDAD/9 - CICLO/ING. SOFTWARE/TRABAJO_GRUPAL_III_CANCER_PULMONES/LUNG_CANCER_DETECTION_APP/reports/figures/roc_3d_resnet50_se.png'></div><div class='box'><img src='file:///C:/UNIVERSIDAD/9 - CICLO/ING. SOFTWARE/TRABAJO_GRUPAL_III_CANCER_PULMONES/LUNG_CANCER_DETECTION_APP/reports/figures/roc_cnn_3d_personalizado.png'></div><div class='box'><img src='file:///C:/UNIVERSIDAD/9 - CICLO/ING. SOFTWARE/TRABAJO_GRUPAL_III_CANCER_PULMONES/LUNG_CANCER_DETECTION_APP/reports/figures/pr_3d_densenet121.png'></div><div class='box'><img src='file:///C:/UNIVERSIDAD/9 - CICLO/ING. SOFTWARE/TRABAJO_GRUPAL_III_CANCER_PULMONES/LUNG_CANCER_DETECTION_APP/reports/figures/pr_3d_densenet121_ae.png'></div><div class='box'><img src='file:///C:/UNIVERSIDAD/9 - CICLO/ING. SOFTWARE/TRABAJO_GRUPAL_III_CANCER_PULMONES/LUNG_CANCER_DETECTION_APP/reports/figures/pr_3d_resnet50.png'></div><div class='box'><img src='file:///C:/UNIVERSIDAD/9 - CICLO/ING. SOFTWARE/TRABAJO_GRUPAL_III_CANCER_PULMONES/LUNG_CANCER_DETECTION_APP/reports/figures/pr_3d_resnet50_se.png'></div><div class='box'><img src='file:///C:/UNIVERSIDAD/9 - CICLO/ING. SOFTWARE/TRABAJO_GRUPAL_III_CANCER_PULMONES/LUNG_CANCER_DETECTION_APP/reports/figures/pr_cnn_3d_personalizado.png'></div></div><h2>Pruebas McNemar</h2><div class='flex'><div class='box'><img src='file:///C:/UNIVERSIDAD/9 - CICLO/ING. SOFTWARE/TRABAJO_GRUPAL_III_CANCER_PULMONES/LUNG_CANCER_DETECTION_APP/reports/figures/mcnemar/mcnemar_3d_densenet121_ae_vs_3d_resnet50_se.png'></div><div class='box'><img src='file:///C:/UNIVERSIDAD/9 - CICLO/ING. SOFTWARE/TRABAJO_GRUPAL_III_CANCER_PULMONES/LUNG_CANCER_DETECTION_APP/reports/figures/mcnemar/mcnemar_3d_densenet121_vs_3d_densenet121_ae.png'></div><div class='box'><img src='file:///C:/UNIVERSIDAD/9 - CICLO/ING. SOFTWARE/TRABAJO_GRUPAL_III_CANCER_PULMONES/LUNG_CANCER_DETECTION_APP/reports/figures/mcnemar/mcnemar_3d_densenet121_vs_3d_resnet50.png'></div><div class='box'><img src='file:///C:/UNIVERSIDAD/9 - CICLO/ING. SOFTWARE/TRABAJO_GRUPAL_III_CANCER_PULMONES/LUNG_CANCER_DETECTION_APP/reports/figures/mcnemar/mcnemar_3d_densenet121_vs_3d_resnet50_se.png'></div><div class='box'><img src='file:///C:/UNIVERSIDAD/9 - CICLO/ING. SOFTWARE/TRABAJO_GRUPAL_III_CANCER_PULMONES/LUNG_CANCER_DETECTION_APP/reports/figures/mcnemar/mcnemar_3d_densenet121_vs_cnn_3d_personalizado.png'></div><div class='box'><img src='file:///C:/UNIVERSIDAD/9 - CICLO/ING. SOFTWARE/TRABAJO_GRUPAL_III_CANCER_PULMONES/LUNG_CANCER_DETECTION_APP/reports/figures/mcnemar/mcnemar_3d_resnet50_vs_3d_densenet121_ae.png'></div><div class='box'><img src='file:///C:/UNIVERSIDAD/9 - CICLO/ING. SOFTWARE/TRABAJO_GRUPAL_III_CANCER_PULMONES/LUNG_CANCER_DETECTION_APP/reports/figures/mcnemar/mcnemar_3d_resnet50_vs_3d_resnet50_se.png'></div><div class='box'><img src='file:///C:/UNIVERSIDAD/9 - CICLO/ING. SOFTWARE/TRABAJO_GRUPAL_III_CANCER_PULMONES/LUNG_CANCER_DETECTION_APP/reports/figures/mcnemar/mcnemar_3d_resnet50_vs_cnn_3d_personalizado.png'></div><div class='box'><img src='file:///C:/UNIVERSIDAD/9 - CICLO/ING. SOFTWARE/TRABAJO_GRUPAL_III_CANCER_PULMONES/LUNG_CANCER_DETECTION_APP/reports/figures/mcnemar/mcnemar_cnn_3d_personalizado_vs_3d_densenet121_ae.png'></div><div class='box'><img src='file:///C:/UNIVERSIDAD/9 - CICLO/ING. SOFTWARE/TRABAJO_GRUPAL_III_CANCER_PULMONES/LUNG_CANCER_DETECTION_APP/reports/figures/mcnemar/mcnemar_cnn_3d_personalizado_vs_3d_resnet50_se.png'></div></div></body></html>
